@@ -3,7 +3,7 @@
 
 - Distributes 0.000001 Arbitrum ETH to a user's Ethereum address.
 - Ensures each address can only receive ETH once.
-- Simple web interface for submitting Ethereum addresses.
+- Hash.
 
 ## Prerequisites
 
