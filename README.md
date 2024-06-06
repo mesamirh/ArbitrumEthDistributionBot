@@ -59,10 +59,10 @@ node bot.js
 - Error: `Cannot find module 'telegraf'`:   
 Ensure all dependencies are installed correctly by running `npm install`.
 
-Error: `404: Not Found`:  
+- Error: `404: Not Found`:  
 Verify your bot token in the `.env` file is correct.
 
-Transaction Errors:
+- Transaction Errors:
 Ensure your wallet has sufficient ETH for transactions and the gas limit is set appropriately.
 
 ### License
