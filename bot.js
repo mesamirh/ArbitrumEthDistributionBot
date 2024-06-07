@@ -1,101 +1,98 @@
-const { Telegraf } = require('telegraf');
-const { ethers } = require('ethers');
-const fs = require('fs');
-const dotenv = require('dotenv');
+        require('dotenv').config();
+        const { ethers } = require('ethers');
+        const TelegramBot = require('node-telegram-bot-api');
+        const fs = require('fs');
 
-dotenv.config();
+        // Load environment variables
+        const provider = new ethers.providers.JsonRpcProvider(process.env.ARB_URL);
+        const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
 
-// Initialize the provider and wallet
-const provider = new ethers.providers.JsonRpcProvider('https://arb1.arbitrum.io/rpc');
-const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
+        // Telegram bot token
+        const bot = new TelegramBot(process.env.BOT_TOKEN, { polling: true });
 
-// Initialize the bot
-const bot = new Telegraf(process.env.BOT_TOKEN);
+        // Load addresses from JSON file
+        let addresses = [];
+        let receivedAddresses = [];
 
-// Load sent addresses from JSON file
-let sentAddresses = [];
-const sentAddressesPath = 'addresses.json';
-
-// Function to load sent addresses from the JSON file
-function loadSentAddresses() {
-    if (fs.existsSync(sentAddressesPath)) {
-        const data = fs.readFileSync(sentAddressesPath);
         try {
-            sentAddresses = JSON.parse(data);
-        } catch (error) {
-            console.error('Error parsing JSON data:', error);
-            sentAddresses = [];
-        }
-    } else {
-        fs.writeFileSync(sentAddressesPath, JSON.stringify([]));
-    }
-}
-
-// Function to save sent addresses to the JSON file
-function saveSentAddresses() {
-    fs.writeFileSync(sentAddressesPath, JSON.stringify(sentAddresses, null, 2));
-}
-
-// Load the sent addresses at startup
-loadSentAddresses();
-
-bot.start((ctx) => ctx.reply('Send me your Ethereum address to receive 0.00001 ETH!'));
-
-bot.on('text', async (ctx) => {
-    const ethAddress = ctx.message.text;
-
-    // Check if the address has already received ETH
-    if (sentAddresses.includes(ethAddress)) {
-        ctx.reply('This address has already received ETH.');
-        return;
-    }
-
-    // Check wallet balance
-    const balance = await wallet.getBalance();
-    const amountToSend = ethers.utils.parseEther('0.00001');
-    
-    // Estimate gas limit
-    const tx = {
-        to: ethAddress,
-        value: amountToSend,
-        type: 2,
-    };
-    try {
-        const gasLimit = await provider.estimateGas(tx);
-        const feeData = await provider.getFeeData();
-        
-        // Adjust gas fee calculations
-        const maxFeePerGas = feeData.maxFeePerGas;
-        const maxPriorityFeePerGas = feeData.maxPriorityFeePerGas;
-        const estimatedGasCost = maxFeePerGas.mul(gasLimit);
-
-        console.log('Wallet Balance:', ethers.utils.formatEther(balance));
-        console.log('Amount to Send:', ethers.utils.formatEther(amountToSend));
-        console.log('Estimated Gas Cost:', ethers.utils.formatEther(estimatedGasCost));
-
-        if (balance.lt(amountToSend.add(estimatedGasCost))) {
-            ctx.reply('Insufficient funds in the wallet.');
-            return;
+            const data = fs.readFileSync('addresses.json', 'utf8');
+            addresses = JSON.parse(data);
+        } catch (err) {
+            console.error('Error reading addresses.json:', err);
         }
 
-        // Send ETH
-        tx.gasLimit = gasLimit;
-        tx.maxFeePerGas = maxFeePerGas;
-        tx.maxPriorityFeePerGas = maxPriorityFeePerGas;
+        try {
+            const receivedData = fs.readFileSync('received_addresses.json', 'utf8');
+            receivedAddresses = JSON.parse(receivedData);
+        } catch (err) {
+            console.error('Error reading received_addresses.json:', err);
+            receivedAddresses = []; // Initialize if file doesn't exist
+        }
 
-        // Send the transaction
-        const transactionResponse = await wallet.sendTransaction(tx);
-        await transactionResponse.wait();
+        // Function to send ETH
+        async function sendETH(address) {
+            const amountToSend = ethers.utils.parseEther('0.00001');
+            const balance = await wallet.getBalance();
 
-        // Add the address to the list of sent addresses and save it
-        sentAddresses.push(ethAddress);
-        saveSentAddresses();
+            console.log('Wallet Balance:', ethers.utils.formatEther(balance));
+            console.log('Amount to Send:', ethers.utils.formatEther(amountToSend));
 
-        ctx.reply(`Sent 0.00001 ETH to ${ethAddress}. Transaction Hash: ${transactionResponse.hash}`);
-    } catch (error) {
-        console.error('Error sending ETH:', error);
-        ctx.reply('Error sending ETH: ' + error.message);
-    }
-});
+            if (balance.lt(amountToSend)) {
+                console.log('Insufficient funds in the wallet.');
+                return 'Insufficient funds in the wallet.';
+            }
 
-bot.launch();
+            const gasEstimate = await wallet.estimateGas({
+                to: address,
+                value: amountToSend,
+            });
+
+            const gasPrice = await provider.getGasPrice();
+            const gasCost = gasEstimate.mul(gasPrice);
+
+            console.log('Estimated Gas Cost:', ethers.utils.formatEther(gasCost));
+
+            if (balance.lt(amountToSend.add(gasCost))) {
+                console.log('Insufficient funds for gas.');
+                return 'Insufficient funds for gas.';
+            }
+
+            const tx = await wallet.sendTransaction({
+                to: address,
+                value: amountToSend,
+                gasLimit: gasEstimate,
+                gasPrice: gasPrice,
+            });
+
+            console.log('Transaction sent:', tx.hash);
+            await tx.wait();
+            console.log('Transaction confirmed:', tx.hash);
+
+            // Update the receivedAddresses array and write to JSON file
+            receivedAddresses.push(address);
+            fs.writeFileSync('received_addresses.json', JSON.stringify(receivedAddresses));
+
+            return `Transaction successful: ${tx.hash}`;
+        }
+
+        // Telegram bot listener
+        bot.on('message', async (msg) => {
+            const chatId = msg.chat.id;
+            const text = msg.text.trim();
+
+            if (ethers.utils.isAddress(text)) {
+                if (receivedAddresses.includes(text)) {
+                    bot.sendMessage(chatId, 'This address has already received ETH.');
+                } else {
+                    const result = await sendETH(text);
+                    bot.sendMessage(chatId, result);
+                }
+            } else {
+                bot.sendMessage(chatId, 'Please send a valid Ethereum address to receive ETH.');
+            }
+        });
+
+        // Handle /start command
+        bot.onText(/\/start/, (msg) => {
+            bot.sendMessage(msg.chat.id, 'Welcome! Send me an Ethereum address to receive ETH.');
+        });
