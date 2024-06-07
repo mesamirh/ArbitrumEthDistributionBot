@@ -1,17 +1,16 @@
 {
-  "name": "telegram-bot",
+  "name": "arbitrum-eth-distribution-bot",
   "version": "1.0.0",
+  "description": "A bot for distributing ETH on the Arbitrum network.",
   "main": "bot.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node bot.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
-    "dotenv": "^16.4.5",
     "ethers": "^5.7.2",
-    "telegraf": "^4.16.3"
-  }
+    "node-telegram-bot-api": "^0.57.0",
+    "dotenv": "^10.0.0"
+  },
+  "author": "",
+  "license": "ISC"
 }
