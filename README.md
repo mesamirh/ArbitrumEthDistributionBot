@@ -24,24 +24,21 @@ cd arbitrum-eth-distribution-bot
 ```
 npm install
 ```
-### 3. Create `.env` File
-Create a file named `.env` in the root directory of the project and add your environment variables:
+### 3. Create `config.env` File
+Create a file named `config.env` in the root directory of the project and add your environment variables:
 ```
 BOT_TOKEN=your-telegram-bot-token
 PRIVATE_KEY=your-ethereum-wallet-private-key
 ```
-### 4. Create `addresses.json` File
-Create an empty JSON file named `addresses.json` in the root directory of the project
-
-### 5. Run the Bot
+### 4. Run the Bot
 ```
 node bot.js
 ```
 
 ### Files and Structure
 - `bot.js`: The main script for the Telegram bot.
-- `.env`: Environment variables for bot token and private key.
-- `addresses.json`: JSON file to keep track of addresses that have already received ETH.
+- `config.env`: Environment variables for bot token and private key.
+- `addresses.json & received_addresses.json`: JSON file to keep track of addresses that have already received ETH.
 - `package.json`: Project configuration and dependencies.
 
 ### Usage
