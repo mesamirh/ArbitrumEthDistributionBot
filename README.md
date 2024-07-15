@@ -18,7 +18,7 @@
 ```
 git clone https://github.com/mesamirh/arbitrum-eth-distribution-bot.git
 
-cd arbitrum-eth-distribution-bot
+cd ArbitrumEthDistributionBot
 ```
 ### 2. Install Dependencies
 ```
