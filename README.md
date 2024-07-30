@@ -29,6 +29,7 @@ Create a file named `config.env` in the root directory of the project and add yo
 ```
 BOT_TOKEN=your-telegram-bot-token
 PRIVATE_KEY=your-ethereum-wallet-private-key
+ARB_URL=rpc-here // like https://arb1.arbitrum.io/rpc
 ```
 ### 4. Run the Bot
 ```
