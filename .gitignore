@@ -2,3 +2,4 @@
 node_modules/
 addresses.json
 received_addresses.json
+package-lock.json
