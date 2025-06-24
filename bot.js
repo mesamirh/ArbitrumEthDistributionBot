@@ -11,37 +11,50 @@ process.stdout.write("\x1Bc");
 
 // Supported networks configuration
 const NETWORKS = {
-  arbitrum: {
-    name: "Arbitrum",
-    rpc: process.env.ARB_URL,
-    chainId: 42161,
-    tokens: [
-      { symbol: "ETH", address: null, decimals: 18 },
-      {
-        symbol: "USDT",
-        address: "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
-        decimals: 6,
-      },
-      {
-        symbol: "USDC",
-        address: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
-        decimals: 6,
-      },
-    ],
-  },
-  bsc: {
-    name: "Binance Smart Chain",
-    rpc: process.env.BSC_URL,
-    chainId: 56,
-    tokens: [
-      { symbol: "BNB", address: null, decimals: 18 },
-      {
-        symbol: "USDT",
-        address: "0x55d398326f99059ff775485246999027b3197955",
-        decimals: 18,
-      },
-    ],
-  },
+  arbitrum: {
+    name: "Arbitrum",
+    rpc: process.env.ARB_URL,
+    chainId: 42161,
+    tokens: [
+      { symbol: "ETH", address: null, decimals: 18 },
+      {
+        symbol: "USDT",
+        address: "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
+        decimals: 6,
+      },
+      {
+        symbol: "USDC",
+        address: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+        decimals: 6,
+      },
+    ],
+  },
+  bsc: {
+    name: "Binance Smart Chain",
+    rpc: process.env.BSC_URL,
+    chainId: 56,
+    tokens: [
+      { symbol: "BNB", address: null, decimals: 18 },
+      {
+        symbol: "USDT",
+        address: "0x55d398326f99059ff775485246999027b3197955",
+        decimals: 18,
+      },
+    ],
+  },
+  opbnb: {
+    name: "opBNB",
+    rpc: process.env.OPBNB_URL, // Make sure this exists in your .env as OPBNB_URL
+    chainId: 204,
+    tokens: [
+      { symbol: "BNB", address: null, decimals: 18 },
+      {
+        symbol: "USDT",
+        address: "0x55d398326f99059ff775485246999027b3197955", // Same address as BSC (mirrored on opBNB)
+        decimals: 18,
+      },
+    ],
+  },
 };
 
 const ERC20_ABI = [
